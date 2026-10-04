@@ -245,6 +245,38 @@ export const reviewVerification = (
     p_correction_reason: correctionReason ?? null,
   });
 
+// Verification reads
+//
+// `verification_requests` has RLS enabled with no SELECT policy, so selecting
+// from it directly always returns zero rows. Personnel reads therefore go through
+// this credential-checked function.
+export type VerificationRequest = {
+  id: string;
+  residentId: string;
+  residentName: string;
+  documentUri: string | null;
+  status: string;
+  submittedAt: string | null;
+  reviewedAt: string | null;
+  correctionReason: string | null;
+};
+
+export const listVerificationRequests = (username: string) => {
+  const c = requirePersonnelAuth(username);
+  return rpc<VerificationRequest[]>('list_verification_requests_directory', {
+    p_username: c.username,
+    p_password: c.password,
+  });
+};
+
+export const countPendingVerifications = (username: string) => {
+  const c = requirePersonnelAuth(username);
+  return rpc<number>('count_pending_verifications', {
+    p_username: c.username,
+    p_password: c.password,
+  });
+};
+
 // ---------------------------------------------------------------------------
 // Resident-scoped calls. These run as the signed-in Supabase Auth user and are
 // scoped to auth.uid() server-side, so a resident can only ever touch their own

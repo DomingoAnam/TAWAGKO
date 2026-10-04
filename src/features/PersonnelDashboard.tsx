@@ -6,11 +6,11 @@ import { COLORS, SPACING, TYPOGRAPHY } from '../theme';
 import {
   getCurrentUser,
   getAnnouncements,
-  getVerificationRequests,
   getOfficials,
 } from '../services/storage';
 import { useAssistanceCounts } from '../hooks/useAssistanceCounts';
 import { refreshAssistanceCounts } from '../services/assistanceCounts';
+import { countPendingVerifications } from '../services/supabaseStorage';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -26,14 +26,25 @@ export default function PersonnelDashboard({ navigation }: any) {
   useFocusEffect(
     useCallback(() => {
       const load = async () => {
-        setUser(await getCurrentUser());
+        const me = await getCurrentUser();
+        setUser(me);
         const anns = (await getAnnouncements()) || [];
-        const vrf = (await getVerificationRequests()) || [];
         const offs = (await getOfficials()) || [];
+
+        // Needs personnel credentials, so it must not break the rest of the
+        // summary if the session password is unavailable.
+        let pendingVerification = 0;
+        try {
+          pendingVerification = me?.username
+            ? (await countPendingVerifications(me.username)) ?? 0
+            : 0;
+        } catch {
+          pendingVerification = 0;
+        }
+
         setStats({
           announcements: anns.length,
-          pendingVerification: vrf.filter((v: any) => v.status === 'PENDING_VERIFICATION')
-            .length,
+          pendingVerification,
           officials: offs.length,
         });
         await refreshAssistanceCounts();

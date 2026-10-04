@@ -124,8 +124,15 @@ export default function PersonnelTokenScreen({ navigation, route }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background, padding: SPACING.xl },
-  header: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  // Same rule as PersonnelLoginScreen: the header must not absorb the leftover
+  // height, otherwise the token box is pushed to the bottom of the screen.
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+    padding: SPACING.xl,
+    justifyContent: 'center',
+  },
+  header: { alignItems: 'center', marginBottom: SPACING.lg },
   backBtn: { position: 'absolute', top: 0, left: 0 },
   title: { marginTop: SPACING.lg, fontSize: 23, fontWeight: '800', color: COLORS.textPrimary, textAlign: 'center' },
   subtitle: {

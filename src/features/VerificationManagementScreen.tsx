@@ -29,8 +29,14 @@ export default function VerificationManagementScreen() {
   const load = useCallback(async () => {
     try {
       const me = await getCurrentUser();
-      setUsername(me?.username ?? '');
-      setItems((await getVerificationRequests()) || []);
+      const uname = me?.username ?? '';
+      setUsername(uname);
+      if (!uname) return;
+      const rows = (await getVerificationRequests(uname)) || [];
+      // Only show work awaiting a decision. The database filters this too, but
+      // filtering here keeps the list correct even if that function is an older
+      // revision, and prevents a decided request lingering after a decision.
+      setItems(rows.filter((r: any) => r.status === 'PENDING_VERIFICATION'));
     } catch (error: any) {
       Alert.alert('Could not load', error?.message ?? 'Check your connection.');
     } finally {
@@ -42,7 +48,18 @@ export default function VerificationManagementScreen() {
 
   const decide = async (item: any, status: 'VERIFIED' | 'NEEDS_CORRECTION' | 'REJECTED', reason?: string) => {
     try {
-      await reviewVerification(requirePersonnelAuth(username), item.id, status, reason);
+      const updated = await reviewVerification(
+        requirePersonnelAuth(username),
+        item.id,
+        status,
+        reason
+      );
+      // The RPC returns false when the row could not be matched. Treat that as a
+      // failure rather than silently leaving the request in the queue.
+      if (updated === false) {
+        Alert.alert('Could not update', 'That request no longer exists. Pull to refresh.');
+        return;
+      }
       await load();
     } catch (error: any) {
       Alert.alert('Could not update', error?.message ?? 'Please try again.');
@@ -97,8 +114,8 @@ export default function VerificationManagementScreen() {
         <ActivityIndicator color={COLORS.primary} style={styles.loader} />
       ) : items.length === 0 ? (
         <EmptyState
-          title="No verification requests"
-          message="Requests submitted by residents from their profile appear here."
+          title="No pending requests"
+          message="Residents who submit a verification appear here. Requests you approve, reject, or send back for correction are removed from this list."
         />
       ) : (
         items.map((item) => (

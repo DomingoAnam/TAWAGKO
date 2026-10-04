@@ -159,8 +159,16 @@ export default function PersonnelLoginScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background, padding: SPACING.xl },
-  header: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  // The whole block is centred as one unit. The header must NOT use flex: 1,
+  // otherwise it absorbs all the leftover height and centres itself, leaving a
+  // large gap between "Personnel Portal" and the sign-in card.
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+    padding: SPACING.xl,
+    justifyContent: 'center',
+  },
+  header: { alignItems: 'center', marginBottom: SPACING.lg },
   title: { marginTop: SPACING.lg, fontSize: 25, fontWeight: '800', color: COLORS.textPrimary },
   subtitle: { marginTop: 4, fontSize: 13, color: COLORS.textSecondary },
   card: {

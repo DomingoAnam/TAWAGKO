@@ -10,6 +10,7 @@
     "@react-navigation/native-stack": "^7.20.0",
     "@supabase/supabase-js": "^2.117.2",
     "expo": "~57.0.25",
+    "expo-font": "~57.0.4",
     "expo-image-picker": "~57.0.20",
     "expo-linking": "^57.0.11",
     "expo-localization": "^57.0.2",
@@ -25,6 +26,11 @@
     "eslint": "^9.0.0",
     "eslint-config-expo": "~57.0.2",
     "typescript": "~6.0.3"
+  },
+  "overrides": {
+    "@emnapi/core": "1.11.3",
+    "@emnapi/runtime": "1.11.3",
+    "@emnapi/wasi-threads": "1.2.3"
   },
   "scripts": {
     "start": "expo start",

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, TYPOGRAPHY, COMPONENT_STYLES, SHADOWS } from '../theme';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { COLORS, SPACING, TYPOGRAPHY } from '../theme';
 import { EmergencyContactItem } from '../components/EmergencyContactItem';
 import { getEmergencyContacts } from '../services/storage';
 import { AppLogo } from '../components/AppLogo';
@@ -20,16 +19,13 @@ export default function EmergencyContactsScreen({ navigation }: any) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: SPACING.xl }}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <View style={styles.backRow}>
-            <Ionicons name="arrow-back" size={18} color={COLORS.primary} />
-            <Text style={styles.backBtn}>Back</Text>
-          </View>
-        </TouchableOpacity>
         <AppLogo size={54} />
       </View>
       <Text style={styles.title}>Emergency Contacts</Text>
       <Text style={styles.subtitle}>Quickly contact verified emergency services.</Text>
+      {contacts.length === 0 ? (
+        <Text style={styles.empty}>No emergency contacts have been published yet.</Text>
+      ) : null}
       {contacts.map((c) => (
         <EmergencyContactItem key={c.id} item={c} />
       ))}
@@ -38,18 +34,12 @@ export default function EmergencyContactsScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.lightGray },
+  container: { flex: 1, backgroundColor: COLORS.background },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     marginBottom: SPACING.xl,
   },
-  backRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  backBtn: {
-    ...TYPOGRAPHY.captionBold,
-    color: COLORS.primaryGreen,
-  },
+  empty: { ...TYPOGRAPHY.caption, color: COLORS.textHint, textAlign: 'center', marginTop: SPACING.lg },
   title: { ...TYPOGRAPHY.h2, color: COLORS.textPrimary, marginBottom: SPACING.xs },
   subtitle: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginTop: SPACING.xs },
 });

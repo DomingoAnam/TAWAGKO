@@ -46,7 +46,7 @@ export default function ResidentLoginScreen({ navigation }: any) {
     <View style={styles.container}>
       <View style={styles.header}>
         <AppLogo size={84} showWordmark={false} />
-        <Text style={styles.title}>Welcome Back</Text>
+        <Text style={styles.title}>Resident Portal</Text>
         <Text style={styles.subtitle}>Sign in to continue to TawagKo</Text>
       </View>
 

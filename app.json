@@ -8,9 +8,11 @@
     "userInterfaceStyle": "light",
     "backgroundColor": "#2F3E9E",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "ph.tawagko.app"
     },
     "android": {
+      "package": "ph.tawagko.app",
       "adaptiveIcon": {
         "backgroundColor": "#2F3E9E",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -33,7 +35,14 @@
             "backgroundColor": "#1F2A6E"
           }
         }
-      ]
-    ]
+      ],
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "28e34e10-d97e-4842-b265-5d00f9f944c3"
+      }
+    },
+    "owner": "personal_use"
   }
 }

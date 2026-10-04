@@ -144,8 +144,8 @@ export default function AssistanceScreen({ navigation }: any) {
 
   if (step === 'needForm') {
     return (
-        <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-          <Text style={styles.header}>Tell Us What You Need</Text>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.header}>Tell Us What You Need</Text>
         {NEEDS.map((n) => (
           <TouchableOpacity key={n} style={styles.checkRow} onPress={() => toggleNeed(n)}>
             <View style={[styles.checkbox, selectedNeeds.includes(n) && styles.checkboxOn]}>
@@ -186,7 +186,20 @@ export default function AssistanceScreen({ navigation }: any) {
             <Text style={[styles.urgencyText, urgency === 'Can Wait' && { color: COLORS.white }]}>CAN WAIT</Text>
           </TouchableOpacity>
         </View>
-        <PrimaryButton title="CONTINUE" onPress={handleNeedSubmit} style={{ marginTop: 20 }} />
+        <PrimaryButton title="CONTINUE" onPress={handleNeedSubmit} style={{ marginTop: SPACING.lg }} />
+
+        {/* Lets the resident abandon the request without submitting anything. */}
+        <SecondaryButton
+          title="BACK"
+          onPress={() => {
+            setStep('checkin');
+            setSelectedNeeds([]);
+            setOtherText('');
+            setDetails('');
+            setUrgency(null);
+          }}
+          style={{ marginTop: SPACING.md }}
+        />
       </ScrollView>
     );
   }

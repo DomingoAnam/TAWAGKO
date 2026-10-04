@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
-import { listOfficialsDirectory, listEmergencyContacts, listBarangayServices, listMyAssistanceRequests, cachePersonnelPassword } from './supabaseStorage';
+import { listOfficialsDirectory, listEmergencyContacts, listBarangayServices, listMyAssistanceRequests, listVerificationRequests, cachePersonnelPassword } from './supabaseStorage';
 
 const PERSONNEL_SESSION_KEY = 'personnel_session';
 
@@ -125,20 +125,11 @@ export const getAnnouncements = async () => {
 export const getAssistanceRequests = async () => listMyAssistanceRequests();
 
 // Verification Requests
-export const getVerificationRequests = async () => {
-  const { data, error } = await supabase.from('verification_requests').select('*');
-  if (error) throw error;
-  return (data || []).map((row: any) => ({
-    id: row.id,
-    residentId: row.resident_id,
-    residentName: row.resident_name,
-    documentUri: row.document_uri,
-    status: row.status,
-    submittedAt: row.submitted_at,
-    reviewedAt: row.reviewed_at,
-    correctionReason: row.correction_reason,
-  }));
-};
+//
+// RLS on `verification_requests` has no SELECT policy, so a direct select always
+// returns zero rows. This delegates to the credential-checked RPC instead.
+export const getVerificationRequests = async (username: string) =>
+  listVerificationRequests(username);
 
 // Post Emergency Check-ins
 export const getPostEmergencyCheckins = async () => {
