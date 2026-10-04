@@ -9,8 +9,9 @@
 --   * No residents, verifications, assistance requests, check-ins, contacts,
 --     services, officials or announcements.
 --
--- Reference data (emergency contacts, services, announcements) is re-seeded
--- automatically on next app launch via `seedSampleData()`.
+-- Reference data (emergency contacts, services, announcements) is NOT re-seeded:
+-- `seedSampleData()` is intentionally disabled, so everything stays empty until
+-- personnel create their own.
 --
 -- Irreversible. Run only when you mean it.
 
