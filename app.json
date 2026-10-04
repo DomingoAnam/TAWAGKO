@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "TAWAGKO",
-    "slug": "TAWAGKO",
+    "slug": "tawagko",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -40,7 +40,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "28e34e10-d97e-4842-b265-5d00f9f944c3"
+        "projectId": "ab7c3b2e-fdf8-4a50-95a5-bb60f4dd000d"
       }
     },
     "owner": "personal_use"
