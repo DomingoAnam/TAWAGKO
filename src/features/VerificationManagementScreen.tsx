@@ -18,6 +18,7 @@ import { COLORS, SPACING, TYPOGRAPHY, SHADOWS, BORDER_RADIUS } from '../theme';
 import { getVerificationRequests, getCurrentUser } from '../services/storage';
 import { reviewVerification, requirePersonnelAuth } from '../services/supabaseStorage';
 import { StatusBadge, EmptyState } from '../components/ReusableComponents';
+import { pushToUser } from '../services/push';
 
 export default function VerificationManagementScreen() {
   const [items, setItems] = useState<any[]>([]);
@@ -62,6 +63,22 @@ export default function VerificationManagementScreen() {
       if (updated === false) {
         Alert.alert('Could not update', 'That request no longer exists. Pull to refresh.');
         return;
+      }
+      // Notify the resident's device with the decision.
+      if (item.residentId) {
+        const title =
+          status === 'VERIFIED'
+            ? 'Verification approved'
+            : status === 'REJECTED'
+            ? 'Verification rejected'
+            : 'Verification needs correction';
+        const body =
+          status === 'VERIFIED'
+            ? 'Your resident verification has been approved.'
+            : reason
+            ? reason
+            : 'Please open the app for details.';
+        void pushToUser(item.residentId, title, body, { verificationId: item.id, status });
       }
       await load();
     } catch (error: any) {

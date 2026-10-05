@@ -12,8 +12,23 @@ import {
 } from '../services/supabaseStorage';
 import { StatusBadge, EmptyState } from '../components/ReusableComponents';
 import { localBanner } from '../services/notify';
+import { pushToUser } from '../services/push';
 
 const STATUSES = ['PENDING', 'UNDER_REVIEW', 'ASSISTANCE_ARRANGED', 'COMPLETED'];
+
+const PUSH_TITLE: Record<string, string> = {
+  PENDING: 'Request received',
+  UNDER_REVIEW: 'Request under review',
+  ASSISTANCE_ARRANGED: 'Help is on the way',
+  COMPLETED: 'Request completed',
+};
+
+const PUSH_BODY: Record<string, string> = {
+  PENDING: 'The barangay has received your request and is waiting to review it.',
+  UNDER_REVIEW: 'The barangay is reviewing your request.',
+  ASSISTANCE_ARRANGED: 'Your assistance is on the way.',
+  COMPLETED: 'Your assistance request has been completed. Thank you.',
+};
 
 export default function AssistanceManagementScreen() {
   const [items, setItems] = useState<any[]>([]);
@@ -42,7 +57,10 @@ export default function AssistanceManagementScreen() {
       (r: any) => r.status === 'PENDING' || r.status === 'UNDER_REVIEW'
     ).length;
     if (seenPendingRef.current !== null && pending > seenPendingRef.current) {
-      localBanner('New assistance request from a resident.');
+      localBanner(
+        'New assistance request',
+        'A resident submitted a help request. Open Assistance to respond.'
+      );
     }
     seenPendingRef.current = pending;
   }, [username]);
@@ -79,6 +97,12 @@ export default function AssistanceManagementScreen() {
     }
     try {
       await updateAssistanceStatus(requirePersonnelAuth(username), item.id, status);
+      // Tell the resident's device directly, even if their app is closed.
+      if (item.residentId) {
+        const title = PUSH_TITLE[status] ?? 'Assistance update';
+        const body = PUSH_BODY[status] ?? `Your request status is now ${status}.`;
+        void pushToUser(item.residentId, title, body, { requestId: item.id, status });
+      }
       await fetchList();
     } catch (err: any) {
       Alert.alert('Could not update', err?.message ?? 'Please try again.');

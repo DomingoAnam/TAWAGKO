@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../theme';
 import { PrimaryButton, SecondaryButton } from '../components/ReusableComponents';
 import { createAssistanceRequest, recordCheckin } from '../services/supabaseStorage';
+import { pushToRole } from '../services/push';
 
 const NEEDS = [
   'Medical Assistance',
@@ -90,6 +91,13 @@ export default function AssistanceScreen({ navigation }: any) {
         details,
       });
       setLastRequestId(created.request_id);
+      // Alert every personnel device right away, app open or not.
+      void pushToRole(
+        'personnel',
+        'New assistance request',
+        `${needs} — ${urgency!.replace(/_/g, ' ')}. Open Assistance to respond.`,
+        { requestId: created.request_id }
+      );
       setStep('submitted');
     } catch (error: any) {
       Alert.alert('Could not submit', error?.message ?? 'Please try again.');

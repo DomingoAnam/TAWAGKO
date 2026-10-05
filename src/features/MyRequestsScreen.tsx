@@ -7,12 +7,19 @@ import { AssistanceCard } from '../components/AssistanceCard';
 import { getAssistanceRequests, getCurrentUser } from '../services/storage';
 import { localBanner } from '../services/notify';
 
-// System toast text for each status for the resident.
+// Banner text for each assistance status.
+const STATUS_TITLE: Record<string, string> = {
+  PENDING: 'Request received',
+  UNDER_REVIEW: 'Request under review',
+  ASSISTANCE_ARRANGED: 'Help is on the way',
+  COMPLETED: 'Request completed',
+};
+
 const STATUS_MESSAGE: Record<string, string> = {
-  PENDING: 'Your request is pending review.',
-  UNDER_REVIEW: 'Your request is under review.',
-  ASSISTANCE_ARRANGED: 'Your request is on the way.',
-  COMPLETED: 'Your request has been completed.',
+  PENDING: 'The barangay has received your request and is waiting to review it.',
+  UNDER_REVIEW: 'The barangay is reviewing your request.',
+  ASSISTANCE_ARRANGED: 'Your assistance is on the way.',
+  COMPLETED: 'Your assistance request has been completed. Thank you.',
 };
 
 export default function MyRequestsScreen({ navigation }: any) {
@@ -33,7 +40,7 @@ export default function MyRequestsScreen({ navigation }: any) {
           mine.forEach((r: any) => {
             const before = prev[r.id];
             if (before !== undefined && before !== r.status) {
-              localBanner(STATUS_MESSAGE[r.status] ?? `Your request status is now ${r.status}`);
+              localBanner(STATUS_TITLE[r.status] ?? 'Assistance update', STATUS_MESSAGE[r.status] ?? `Your request status is now ${r.status}.`);
             }
           });
         }
