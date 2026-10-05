@@ -1,35 +1,24 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import { isRunningInExpoGo } from 'expo';
-import * as Notifications from 'expo-notifications';
 import { supabase } from './supabase';
 import { getCurrentUser } from './storage';
+import { presentBanner } from './bannerStore';
 
 const CHANNEL_ID = 'assistance';
-
-// Show the real banner even when the app is open in the foreground.
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
 
 export type PushTarget = 'personnel' | 'resident';
 
 /**
- * True when running inside the Expo Go sandbox. Expo Go cannot obtain a push
- * token on Android (removed in SDK 53), so we skip registration there instead
- * of triggering the library's hard error. Local notifications still work.
+ * True when running inside the Expo Go sandbox. Expo Go cannot create a
+ * notification channel or obtain a push token on Android (removed in SDK 53),
+ * and expo-notifications throws a hard error there, so we never load it.
  */
-const isExpoGo = () => {
+export const isExpoGo = () => {
   try {
-    // Same check expo-notifications uses internally before it throws.
     if (isRunningInExpoGo()) return true;
   } catch {
-    // Ignore and fall through to the manifest checks.
+    // Fall through to the manifest checks.
   }
   const c = Constants as any;
   return c?.appOwnership === 'expo' || !!c?.expoGoConfig;
@@ -41,12 +30,40 @@ const projectId =
   'ab7c3b2e-fdf8-4a50-95a5-bb60f4dd000d';
 
 /**
+ * Loads expo-notifications on demand. Never called in Expo Go, which is what
+ * keeps the "remote notifications removed from Expo Go" error from firing.
+ */
+let notifPromise: Promise<typeof import('expo-notifications')> | null = null;
+
+const loadNotifications = async () => {
+  if (isExpoGo()) return null;
+  if (!notifPromise) {
+    notifPromise = import('expo-notifications');
+    notifPromise.then((Notifications) => {
+      // Show the real heads-up banner even while the app is in the foreground.
+      Notifications.setNotificationHandler({
+        handleNotification: async () => ({
+          shouldShowBanner: true,
+          shouldShowList: true,
+          shouldPlaySound: true,
+          shouldSetBadge: false,
+        }),
+      });
+    });
+  }
+  return notifPromise;
+};
+
+/**
  * Ask for permission and upload this device's Expo push token.
  * Safe to call on every app start: it no-ops once permission is settled.
  * Returns the token, or null if notifications are unavailable/denied.
  */
 export const registerForPushNotifications = async (): Promise<string | null> => {
   try {
+    const Notifications = await loadNotifications();
+    if (!Notifications) return null;
+
     if (Platform.OS === 'android') {
       // Must exist before requesting permission on Android 13+.
       await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
@@ -65,9 +82,6 @@ export const registerForPushNotifications = async (): Promise<string | null> => 
     }
     if (status !== 'granted') return null;
 
-    // Expo Go cannot register for remote push; bail out quietly.
-    if (isExpoGo()) return null;
-
     const me = await getCurrentUser();
     if (!me?.id) return null;
 
@@ -84,7 +98,7 @@ export const registerForPushNotifications = async (): Promise<string | null> => 
 
     return token;
   } catch {
-    // Expo Go on Android cannot do remote push; local notifications still work.
+    // Permission denied, offline, or unsupported build.
     return null;
   }
 };
@@ -99,23 +113,39 @@ export const unregisterPushToken = async (token: string) => {
 };
 
 /**
- * Fire an immediate local notification. This is what produces the heads-up
- * banner on the device; unlike a toast it also lands in the notification tray.
+ * Show a heads-up notification on this device.
+ *
+ * Real build -> a true system notification (banner + notification tray).
+ * Expo Go   -> our own in-app banner, since no notification channel can exist.
  */
-export const notifyNow = async (title: string, body: string, data?: Record<string, any>) => {
+export const notifyNow = async (
+  title: string,
+  body: string,
+  data?: Record<string, any>
+) => {
+  const Notifications = await loadNotifications();
+  if (!Notifications) {
+    presentBanner(title, body, 'info');
+    return;
+  }
   try {
     await Notifications.scheduleNotificationAsync({
       content: { title, body, data: data ?? {}, sound: true },
       trigger: null,
     });
   } catch {
-    // Permission may have been denied; nothing to do.
+    presentBanner(title, body, 'info');
   }
 };
 
 type TokenRow = { token: string; platform: string | null; userId: string };
 
-const sendToExpo = async (tokens: string[], title: string, body: string, data: Record<string, any>) => {
+const sendToExpo = async (
+  tokens: string[],
+  title: string,
+  body: string,
+  data: Record<string, any>
+) => {
   if (tokens.length === 0) return;
   const messages = tokens.map((to) => ({
     to,
@@ -180,7 +210,8 @@ export const pushToUser = async (
 
 export const setBadgeCount = async (count: number) => {
   try {
-    await Notifications.setBadgeCountAsync(count);
+    const Notifications = await loadNotifications();
+    await Notifications?.setBadgeCountAsync(count);
   } catch {
     // Not all Android launchers support badges.
   }
