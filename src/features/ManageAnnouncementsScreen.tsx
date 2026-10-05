@@ -21,6 +21,7 @@ import {
   requirePersonnelAuth,
 } from '../services/supabaseStorage';
 import { EmptyState } from '../components/ReusableComponents';
+import { pushToRole } from '../services/push';
 
 const CATEGORIES = ['EMERGENCY', 'SERVICES', 'COMMUNITY'];
 
@@ -89,8 +90,20 @@ export default function ManageAnnouncementsScreen() {
       const c = requirePersonnelAuth(creds?.username ?? '');
       if (editing) {
         await updateAnnouncement(c, editing.id, form);
+        void pushToRole(
+          'resident',
+          'Update revised',
+          `${form.title.trim()} — the details of this update have changed.`,
+          { announcementId: editing.id }
+        );
       } else {
         await publishAnnouncement(c, form);
+        void pushToRole(
+          'resident',
+          form.important ? 'Important barangay update' : 'Barangay update',
+          form.title.trim(),
+          { announcementId: editing?.id }
+        );
       }
       setModalVisible(false);
       await refresh();

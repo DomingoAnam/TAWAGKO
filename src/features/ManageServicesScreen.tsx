@@ -21,6 +21,7 @@ import {
   requirePersonnelAuth,
 } from '../services/supabaseStorage';
 import { EmptyState } from '../components/ReusableComponents';
+import { pushToRole } from '../services/push';
 import { DirectoryCard } from '../components/DirectoryCard';
 import { pickImageAsDataUri } from '../services/imagePicker';
 
@@ -94,6 +95,14 @@ export default function ManageServicesScreen() {
         id: editing?.id ?? null,
         ...form,
       });
+      void pushToRole(
+        'resident',
+        editing ? 'Service updated' : 'New barangay service',
+        editing
+          ? `${form.serviceName.trim()} — details have changed.`
+          : `${form.serviceName.trim()} is now available.`,
+        { serviceId: editing?.id }
+      );
       setOpen(false);
       await load();
     } catch (error: any) {

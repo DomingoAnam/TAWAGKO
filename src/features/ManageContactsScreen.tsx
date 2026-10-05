@@ -21,6 +21,7 @@ import {
   requirePersonnelAuth,
 } from '../services/supabaseStorage';
 import { EmptyState } from '../components/ReusableComponents';
+import { pushToRole } from '../services/push';
 import { DirectoryCard } from '../components/DirectoryCard';
 import { pickImageAsDataUri } from '../services/imagePicker';
 
@@ -92,6 +93,14 @@ export default function ManageContactsScreen() {
         id: editing?.id ?? null,
         ...form,
       });
+      void pushToRole(
+        'resident',
+        editing ? 'Emergency contact updated' : 'New emergency contact',
+        editing
+          ? `${form.serviceName.trim()} — details have changed.`
+          : `${form.serviceName.trim()} — ${form.contactNumber.trim()}`,
+        { contactId: editing?.id }
+      );
       setOpen(false);
       await load();
     } catch (error: any) {
