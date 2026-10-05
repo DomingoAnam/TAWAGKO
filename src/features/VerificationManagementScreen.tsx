@@ -9,6 +9,8 @@ import {
   TextInput,
   Modal,
   ActivityIndicator,
+  Image,
+  Dimensions,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,6 +27,7 @@ export default function VerificationManagementScreen() {
   const [correctionTarget, setCorrectionTarget] = useState<any>(null);
   const [correctionReason, setCorrectionReason] = useState('');
   const [correctionMode, setCorrectionMode] = useState<'correct' | 'reject'>('correct');
+  const [enlargedUri, setEnlargedUri] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -140,6 +143,22 @@ export default function VerificationManagementScreen() {
               <StatusBadge status={item.status} label={String(item.status).replace(/_/g, ' ')} />
             </View>
 
+            {item.documentUri ? (
+              <TouchableOpacity onPress={() => setEnlargedUri(item.documentUri)} activeOpacity={0.9}>
+                <Image
+                  source={{ uri: item.documentUri }}
+                  style={styles.docThumb}
+                  resizeMode="cover"
+                />
+                <View style={styles.docHint}>
+                  <Ionicons name="expand-outline" size={14} color={COLORS.onBrand} />
+                  <Text style={styles.docHintText}>Tap to view document</Text>
+                </View>
+              </TouchableOpacity>
+            ) : (
+              <Text style={styles.noDoc}>No document image was attached.</Text>
+            )}
+
             {item.correctionReason ? (
               <View style={styles.reasonBox}>
                 <Ionicons name="alert-circle" size={14} color={COLORS.accentDark} />
@@ -213,6 +232,19 @@ export default function VerificationManagementScreen() {
         </View>
       </Modal>
 
+      <Modal visible={enlargedUri !== null} transparent animationType="fade" onRequestClose={() => setEnlargedUri(null)}>
+        <TouchableOpacity style={styles.enlargeBackdrop} activeOpacity={1} onPress={() => setEnlargedUri(null)}>
+          {enlargedUri ? (
+            <Image
+              source={{ uri: enlargedUri }}
+              style={{ width: Dimensions.get('window').width - 32, height: Dimensions.get('window').width - 32 }}
+              resizeMode="contain"
+            />
+          ) : null}
+          <Text style={styles.enlargeHint}>Tap anywhere to close</Text>
+        </TouchableOpacity>
+      </Modal>
+
     </ScrollView>
   );
 }
@@ -246,6 +278,17 @@ const styles = StyleSheet.create({
   name: { ...TYPOGRAPHY.bodyLarge, fontWeight: '700', color: COLORS.textPrimary },
   meta: { ...TYPOGRAPHY.small, color: COLORS.textSecondary, marginTop: 1 },
   badgeRow: { marginTop: SPACING.md },
+  docThumb: { width: '100%', height: 140, borderRadius: 14, marginTop: SPACING.md, backgroundColor: COLORS.surfaceAlt },
+  docHint: {
+    position: 'absolute', bottom: 8, alignSelf: 'center',
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: 'rgba(15,17,34,0.72)',
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12,
+  },
+  docHintText: { ...TYPOGRAPHY.small, color: COLORS.onBrand, fontWeight: '600' },
+  noDoc: { ...TYPOGRAPHY.small, color: COLORS.textHint, marginTop: SPACING.md, fontStyle: 'italic' },
+  enlargeBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.92)', justifyContent: 'center', alignItems: 'center', padding: SPACING.md },
+  enlargeHint: { ...TYPOGRAPHY.small, color: COLORS.textHint, marginTop: SPACING.md },
   reasonBox: {
     flexDirection: 'row',
     gap: 7,

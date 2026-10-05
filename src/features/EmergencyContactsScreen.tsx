@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { COLORS, SPACING, TYPOGRAPHY } from '../theme';
 import { EmergencyContactItem } from '../components/EmergencyContactItem';
 import { getEmergencyContacts } from '../services/storage';
@@ -8,13 +9,15 @@ import { AppLogo } from '../components/AppLogo';
 export default function EmergencyContactsScreen({ navigation }: any) {
   const [contacts, setContacts] = useState<any[]>([]);
 
-  useEffect(() => {
-    const load = async () => {
-      const data = (await getEmergencyContacts()) || [];
-      setContacts(data);
-    };
-    load();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      const load = async () => {
+        const data = (await getEmergencyContacts()) || [];
+        setContacts(data);
+      };
+      load();
+    }, [])
+  );
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: SPACING.xl }}>

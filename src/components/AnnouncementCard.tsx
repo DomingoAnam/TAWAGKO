@@ -19,6 +19,9 @@ export const AnnouncementCard = ({ item, onPress }: any) => (
     <Text style={styles.description} numberOfLines={3}>
       {item.description}
     </Text>
+    {item.createdBy ? (
+      <Text style={styles.by}>Posted by {item.createdBy}</Text>
+    ) : null}
   </View>
 );
 
@@ -59,4 +62,5 @@ const styles = StyleSheet.create({
   title: { fontSize: 17, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 4 },
   meta: { fontSize: 12, color: COLORS.textHint, marginBottom: 8 },
   description: { fontSize: 14, color: COLORS.textSecondary, lineHeight: 20 },
+  by: { fontSize: 12, color: COLORS.textHint, marginTop: 8, fontStyle: 'italic' },
 });

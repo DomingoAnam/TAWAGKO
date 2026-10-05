@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../theme';
 import { getCurrentUser, getAnnouncements } from '../services/storage';
 import { listMyAssistanceRequests } from '../services/supabaseStorage';
@@ -19,25 +20,27 @@ export default function ResidentHomeScreen({ navigation }: any) {
   const [dismissed, setDismissed] = useState(false);
   const [activeRequests, setActiveRequests] = useState(0);
 
-  useEffect(() => {
-    const load = async () => {
-      setUser(await getCurrentUser());
-      const anns = (await getAnnouncements()) || [];
-      setAnnouncement(anns.find((a: any) => a.important) || anns[0]);
+  useFocusEffect(
+    useCallback(() => {
+      const load = async () => {
+        setUser(await getCurrentUser());
+        const anns = (await getAnnouncements()) || [];
+        setAnnouncement(anns.find((a: any) => a.important) || anns[0]);
 
-      // Red dot on the assistance row while a request is still being handled.
-      // Requires a Supabase session, so a missing/failed session is not an error.
-      try {
-        const rows = (await listMyAssistanceRequests()) || [];
-        setActiveRequests(
-          rows.filter((r: any) => r.status === 'PENDING' || r.status === 'UNDER_REVIEW').length
-        );
-      } catch {
-        setActiveRequests(0);
-      }
-    };
-    load();
-  }, []);
+        // Red dot on the assistance row while a request is still being handled.
+        // Requires a Supabase session, so a missing/failed session is not an error.
+        try {
+          const rows = (await listMyAssistanceRequests()) || [];
+          setActiveRequests(
+            rows.filter((r: any) => r.status === 'PENDING' || r.status === 'UNDER_REVIEW').length
+          );
+        } catch {
+          setActiveRequests(0);
+        }
+      };
+      load();
+    }, [])
+  );
 
   const firstName = user?.fullName?.split(' ')[0] || 'Resident';
   const verified = user?.verificationStatus === 'VERIFIED';

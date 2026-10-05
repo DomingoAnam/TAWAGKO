@@ -23,6 +23,8 @@
 
 begin;
 
+alter table users add column if not exists is_active boolean default true;
+
 create or replace function public.get_my_resident_profile()
 returns jsonb
 language plpgsql
@@ -69,7 +71,8 @@ begin
     'address',            v_row.address,
     'role',               v_row.role,
     'profilePhoto',       v_row.profile_photo,
-    'verificationStatus', v_row.verification_status
+    'verificationStatus', v_row.verification_status,
+    'isActive',           coalesce(v_row.is_active, true)
   );
 end;
 $$;

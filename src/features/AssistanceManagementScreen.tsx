@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,8 +8,10 @@ import {
   updateAssistanceStatus,
   listAssistanceRequestsDirectory,
   requirePersonnelAuth,
+  purgeStaleAssistedRequests,
 } from '../services/supabaseStorage';
 import { StatusBadge, EmptyState } from '../components/ReusableComponents';
+import { localBanner } from '../services/notify';
 
 const STATUSES = ['PENDING', 'UNDER_REVIEW', 'ASSISTANCE_ARRANGED', 'COMPLETED'];
 
@@ -19,14 +21,30 @@ export default function AssistanceManagementScreen() {
   const [loading, setLoading] = useState(true);
   const [expired, setExpired] = useState(false);
   const [error, setError] = useState('');
+  const seenPendingRef = useRef<number | null>(null);
 
   const fetchList = useCallback(async () => {
     const me = await getCurrentUser();
     const uname = me?.username ?? username;
     const c = requirePersonnelAuth(uname);
+    // Permanently delete completed requests older than 3 days before listing.
+    try {
+      await purgeStaleAssistedRequests(c.username, 3);
+    } catch {
+      // Non-fatal; still show what we have.
+    }
     const rows = await listAssistanceRequestsDirectory(c.username, c.password);
     setUsername(c.username);
     setItems(rows);
+
+    // System toast when the number of actionable requests rises.
+    const pending = rows.filter(
+      (r: any) => r.status === 'PENDING' || r.status === 'UNDER_REVIEW'
+    ).length;
+    if (seenPendingRef.current !== null && pending > seenPendingRef.current) {
+      localBanner('New assistance request from a resident.');
+    }
+    seenPendingRef.current = pending;
   }, [username]);
 
   useFocusEffect(
@@ -54,6 +72,11 @@ export default function AssistanceManagementScreen() {
   );
 
   const changeStatus = async (item: any, status: string) => {
+    if (item.status === 'COMPLETED') {
+      // A completed request is final; do not allow moving it back.
+      Alert.alert('Request completed', 'This request is completed and can no longer be modified.');
+      return;
+    }
     try {
       await updateAssistanceStatus(requirePersonnelAuth(username), item.id, status);
       await fetchList();
@@ -118,14 +141,16 @@ export default function AssistanceManagementScreen() {
             <View style={styles.statusRow}>
               {STATUSES.map((s) => {
                 const active = item.status === s;
+                const locked = item.status === 'COMPLETED';
                 return (
                   <TouchableOpacity
                     key={s}
-                    style={[styles.statusBtn, active && styles.statusOn]}
+                    disabled={locked}
+                    style={[styles.statusBtn, active && styles.statusOn, locked && !active && styles.statusLocked]}
                     onPress={() => changeStatus(item, s)}
-                    activeOpacity={0.9}
+                    activeOpacity={locked ? 1 : 0.9}
                   >
-                    <Text style={[styles.statusText, active && styles.statusTextOn]}>
+                    <Text style={[styles.statusText, active && styles.statusTextOn, locked && !active && styles.statusTextLocked]}>
                       {String(s).replace(/_/g, ' ')}
                     </Text>
                   </TouchableOpacity>
@@ -182,4 +207,6 @@ const styles = StyleSheet.create({
   statusOn: { backgroundColor: COLORS.primary },
   statusText: { ...TYPOGRAPHY.smallBold, color: COLORS.primary, fontSize: 11 },
   statusTextOn: { color: COLORS.onBrand },
+  statusLocked: { borderColor: COLORS.border, opacity: 0.45 },
+  statusTextLocked: { color: COLORS.textHint },
 });

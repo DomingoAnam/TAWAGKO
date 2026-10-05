@@ -8,6 +8,7 @@ import ManageOfficialsScreen from '../features/ManageOfficialsScreen';
 import ManageAnnouncementsScreen from '../features/ManageAnnouncementsScreen';
 import VerificationManagementScreen from '../features/VerificationManagementScreen';
 import AssistanceManagementScreen from '../features/AssistanceManagementScreen';
+import ManageResidentsScreen from '../features/ManageResidentsScreen';
 import PersonnelProfileScreen from '../features/PersonnelProfileScreen';
 import { COLORS } from '../theme';
 
@@ -75,6 +76,11 @@ export default function PersonnelTabs() {
         name="Announcements"
         component={ManageAnnouncementsScreen}
         options={{ tabBarIcon: TabIcon('megaphone'), tabBarLabel: 'UPDATES' }}
+      />
+      <Tab.Screen
+        name="Residents"
+        component={ManageResidentsScreen}
+        options={{ tabBarIcon: TabIcon('people'), tabBarLabel: 'RESIDENTS' }}
       />
       <Tab.Screen
         name="Verification"

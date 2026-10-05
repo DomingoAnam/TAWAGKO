@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { COLORS, SPACING, TYPOGRAPHY } from '../theme';
 import { ServiceItem } from '../components/ServiceItem';
 import { SearchBar } from '../components/SearchBar';
@@ -10,13 +11,15 @@ export default function ServicesScreen() {
   const [services, setServices] = useState<any[]>([]);
   const [query, setQuery] = useState('');
 
-  useEffect(() => {
-    const load = async () => {
-      const data = (await getBarangayServices()) || [];
-      setServices(data);
-    };
-    load();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      const load = async () => {
+        const data = (await getBarangayServices()) || [];
+        setServices(data);
+      };
+      load();
+    }, [])
+  );
 
   const filtered = services.filter((s) =>
     s.serviceName.toLowerCase().includes(query.toLowerCase()) ||

@@ -1,20 +1,45 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../theme';
 import { AssistanceCard } from '../components/AssistanceCard';
 import { getAssistanceRequests, getCurrentUser } from '../services/storage';
+import { localBanner } from '../services/notify';
+
+// System toast text for each status for the resident.
+const STATUS_MESSAGE: Record<string, string> = {
+  PENDING: 'Your request is pending review.',
+  UNDER_REVIEW: 'Your request is under review.',
+  ASSISTANCE_ARRANGED: 'Your request is on the way.',
+  COMPLETED: 'Your request has been completed.',
+};
 
 export default function MyRequestsScreen({ navigation }: any) {
   const [requests, setRequests] = useState<any[]>([]);
+  const lastStatusRef = useRef<Record<string, string> | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       const load = async () => {
         const user = await getCurrentUser();
         const all = (await getAssistanceRequests()) || [];
-        setRequests(all.filter((r: any) => r.residentId === user?.id));
+        const mine = all.filter((r: any) => r.residentId === user?.id);
+        setRequests(mine);
+
+        // Toast when a request's status changes since we last loaded.
+        const prev = lastStatusRef.current;
+        if (prev) {
+          mine.forEach((r: any) => {
+            const before = prev[r.id];
+            if (before !== undefined && before !== r.status) {
+              localBanner(STATUS_MESSAGE[r.status] ?? `Your request status is now ${r.status}`);
+            }
+          });
+        }
+        lastStatusRef.current = Object.fromEntries(
+          mine.map((r: any) => [r.id, r.status])
+        );
       };
       load();
     }, [])

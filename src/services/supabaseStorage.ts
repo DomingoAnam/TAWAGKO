@@ -351,6 +351,46 @@ export const requirePersonnelAuth = (username: string) => {
 
 export const hasPersonnelAuth = () => personnelPasswordCache !== null;
 
+// Resident directory (personnel only)
+export type Resident = {
+  id: string;
+  fullName: string;
+  username: string;
+  email: string | null;
+  contactNumber: string | null;
+  address: string | null;
+  verificationStatus: string | null;
+  isActive: boolean;
+  createdAt: string | null;
+};
+
+export const listResidents = (username: string) => {
+  const c = requirePersonnelAuth(username);
+  return rpc<Resident[]>('list_residents_directory', {
+    p_username: c.username,
+    p_password: c.password,
+  });
+};
+
+export const setResidentActive = (username: string, userId: string, active: boolean) => {
+  const c = requirePersonnelAuth(username);
+  return rpc<boolean>('set_resident_active', {
+    p_username: c.username,
+    p_password: c.password,
+    p_user_id: userId,
+    p_active: active,
+  });
+};
+
+export const purgeStaleAssistedRequests = (username: string, days = 3) => {
+  const c = requirePersonnelAuth(username);
+  return rpc<number>('purge_stale_assisted_requests', {
+    p_username: c.username,
+    p_password: c.password,
+    p_days: days,
+  });
+};
+
 export const listAssistanceRequestsDirectory = (username: string, password: string) =>
   rpc<any[]>('list_assistance_requests_directory', {
     p_username: username.trim(),

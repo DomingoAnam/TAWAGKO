@@ -39,6 +39,19 @@ export default function ResidentLoginScreen({ navigation }: any) {
       Alert.alert('Sign in failed', error.message);
       return;
     }
+
+    // Block disabled resident accounts right after sign in.
+    try {
+      const { data: profile } = await supabase.rpc('get_my_resident_profile');
+      if (profile && profile.isActive === false) {
+        await supabase.auth.signOut();
+        Alert.alert('Account disabled', 'Your account has been disabled. Please contact the barangay.');
+        return;
+      }
+    } catch {
+      // Profile may not exist yet; allow through to finishing registration.
+    }
+
     navigation.replace('ResidentMain');
   };
 
