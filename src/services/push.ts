@@ -18,6 +18,16 @@ Notifications.setNotificationHandler({
 
 export type PushTarget = 'personnel' | 'resident';
 
+/**
+ * True when running inside the Expo Go sandbox. Expo Go cannot obtain a push
+ * token on Android (removed in SDK 53), so we skip registration there instead
+ * of triggering the library's hard error. Local notifications still work.
+ */
+const isExpoGo = () => {
+  const c = Constants as any;
+  return c?.appOwnership === 'expo' || !!c?.expoGoConfig;
+};
+
 const projectId =
   (Constants as any)?.expoConfig?.extra?.eas?.projectId ??
   (Constants as any)?.easConfig?.projectId ??
@@ -47,6 +57,9 @@ export const registerForPushNotifications = async (): Promise<string | null> => 
       status = requested.status;
     }
     if (status !== 'granted') return null;
+
+    // Expo Go cannot register for remote push; bail out quietly.
+    if (isExpoGo()) return null;
 
     const me = await getCurrentUser();
     if (!me?.id) return null;
