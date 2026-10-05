@@ -31,6 +31,16 @@ truncate table
   office_info
 restart identity cascade;
 
+-- push_tokens only exists after 015 has been run, so truncate it separately
+-- and only when present. Stale tokens would otherwise keep receiving pushes.
+do $$
+begin
+  if to_regclass('public.push_tokens') is not null then
+    truncate table public.push_tokens restart identity cascade;
+  end if;
+end;
+$$;
+
 commit;
 
 -- Sanity check: token must survive, everything else must be empty.
@@ -46,3 +56,10 @@ select
   (select count(*) from assistance_requests)      as requests,
   (select count(*) from verification_requests)    as verifications,
   (select count(*) from post_emergency_checkins)  as checkins;
+
+-- Wipes any registered notification devices too (015 and later).
+select
+  case
+    when to_regclass('public.push_tokens') is null then 'push_tokens not created yet'
+    else 'push_tokens cleared by the block above'
+  end as push_tokens;
