@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { COLORS } from '../theme/colors';
 
 interface MarkProps {
@@ -9,60 +8,24 @@ interface MarkProps {
 }
 
 /**
- * The TAWAGKO app mark: indigo rounded tile, white handset, amber vibration
- * waves either side — matching the generated launcher icon.
+ * The TAWAGKO app mark: the actual brand square (blue tile + white phone ring,
+ * wifi waves and location pin), as generated from the source logo. This keeps
+ * the in-app header in lockstep with the launcher icon and splash.
  */
 export function AppLogoMark({ size = 96, style }: MarkProps) {
-  const glyph = Math.round(size * 0.44);
-  const arc = Math.round(size * 0.19);
-  const arcW = Math.max(2, Math.round(size * 0.045));
-  const arcOffset = Math.round(size * 0.235);
-  const arcSpread = Math.round(size * 0.115);
-
-  // Colouring only the right edge of a fully rounded box draws a ")" arc; the
-  // left-hand waves reuse it mirrored with scaleX: -1.
-  const wave = (side: 1 | -1, index: number) => {
-    const inset = arcOffset + arcSpread * index;
-    const base = {
-      width: arc,
-      height: arc,
-      borderRadius: arc / 2,
-      borderWidth: arcW,
-      borderTopColor: 'transparent' as const,
-      borderBottomColor: 'transparent' as const,
-      borderLeftColor: 'transparent' as const,
-      borderRightColor: COLORS.accent,
-      top: (size - arc) / 2,
-    };
-
-    return side > 0 ? (
-      <View key={`r${index}`} style={[styles.wave, base, { right: -inset }]} />
-    ) : (
-      <View
-        key={`l${index}`}
-        style={[styles.wave, base, { left: -inset, transform: [{ scaleX: -1 }] }]}
-      />
-    );
-  };
-
   return (
     <View
       style={[
-        styles.mark,
-        {
-          width: size,
-          height: size,
-          borderRadius: Math.round(size * 0.235),
-        },
+        styles.markImage,
+        { width: size, height: size, borderRadius: Math.round(size * 0.235) },
         style,
       ]}
     >
-      {wave(1, 0)}
-      {wave(1, 1)}
-      {wave(-1, 0)}
-      {wave(-1, 1)}
-
-      <Ionicons name="phone-portrait" size={glyph} color={COLORS.onBrand} />
+      <Image
+        source={require('../../assets/icon.png')}
+        style={{ width: '100%', height: '100%', borderRadius: Math.round(size * 0.235) }}
+        accessibilityIgnoresInvertColors
+      />
     </View>
   );
 }
@@ -97,23 +60,18 @@ const styles = StyleSheet.create({
   wrapper: {
     alignItems: 'center',
   },
-  mark: {
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: 'rgba(47, 62, 158, 0.28)',
+  markImage: {
+    overflow: 'hidden',
+    shadowColor: 'rgba(4, 95, 228, 0.30)',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 1,
     shadowRadius: 14,
     elevation: 8,
   },
-  wave: {
-    position: 'absolute',
-  },
   wordmark: {
     marginTop: 14,
     fontWeight: '900',
-    color: COLORS.primary,
+    color: '#045FE4',
     letterSpacing: 3,
   },
   tagline: {

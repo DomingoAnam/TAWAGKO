@@ -21,6 +21,7 @@ import {
   requirePersonnelAuth,
 } from '../services/supabaseStorage';
 import { EmptyState } from '../components/ReusableComponents';
+import { DirectoryCard } from '../components/DirectoryCard';
 import { pickImageAsDataUri } from '../services/imagePicker';
 
 const AVAILABILITY = ['Available', 'Unavailable'];
@@ -31,6 +32,8 @@ const blank = () => ({
   contactNumber: '',
   availability: 'Available',
   photoUri: null as string | null,
+  address: '',
+  postalCode: '',
 });
 
 export default function ManageContactsScreen() {
@@ -72,6 +75,8 @@ export default function ManageContactsScreen() {
       contactNumber: item.contactNumber ?? '',
       availability: item.availability ?? 'Available',
       photoUri: item.photoUri ?? null,
+      address: item.address ?? '',
+      postalCode: item.postalCode ?? '',
     });
     setOpen(true);
   };
@@ -131,46 +136,27 @@ export default function ManageContactsScreen() {
       ) : null}
 
       {items.map((item) => (
-        <View key={item.id} style={styles.card}>
-          <View style={styles.cardTop}>
-            <View style={styles.icon}>
-              {item.photoUri ? (
-                <Image source={{ uri: item.photoUri }} style={styles.thumb} />
-              ) : (
-                <Ionicons name="call" size={18} color={COLORS.primary} />
-              )}
-            </View>
-            <View style={styles.info}>
-              <Text style={styles.name}>{item.serviceName}</Text>
-              {item.description ? <Text style={styles.desc}>{item.description}</Text> : null}
-            </View>
-            <View
-              style={[
-                styles.availBadge,
-                item.availability === 'Unavailable' && styles.availBadgeOff,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.availText,
-                  item.availability === 'Unavailable' && styles.availTextOff,
-                ]}
-              >
-                {item.availability}
-              </Text>
-            </View>
-          </View>
-
-          <Text style={styles.number}>{item.contactNumber}</Text>
-
-          <View style={styles.actions}>
-            <TouchableOpacity onPress={() => openEdit(item)} hitSlop={{ top: 8, bottom: 8 }}>
-              <Text style={styles.actionText}>EDIT</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => remove(item)} hitSlop={{ top: 8, bottom: 8 }}>
-              <Text style={[styles.actionText, styles.actionDanger]}>DELETE</Text>
-            </TouchableOpacity>
-          </View>
+        <View key={item.id}>
+          <DirectoryCard
+            item={item}
+            kind="contact"
+            actions={
+              <View style={styles.actionsRow}>
+                <TouchableOpacity style={styles.manageBtn} onPress={() => openEdit(item)} activeOpacity={0.9}>
+                  <Ionicons name="create-outline" size={17} color={COLORS.primary} />
+                  <Text style={styles.manageBtnText}>EDIT</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.manageBtn, styles.manageBtnDanger]}
+                  onPress={() => remove(item)}
+                  activeOpacity={0.9}
+                >
+                  <Ionicons name="trash-outline" size={17} color={COLORS.accentDark} />
+                  <Text style={[styles.manageBtnText, styles.manageBtnDangerText]}>DELETE</Text>
+                </TouchableOpacity>
+              </View>
+            }
+          />
         </View>
       ))}
 
@@ -242,6 +228,21 @@ export default function ManageContactsScreen() {
               placeholder="911"
               keyboardType="phone-pad"
             />
+            <Text style={styles.label}>Address/Location</Text>
+            <TextInput
+              style={styles.input}
+              value={form.address}
+              onChangeText={(v) => setForm({ ...form, address: v })}
+              placeholder="PNP headquarters, your address"
+            />
+            <Text style={styles.label}>Postal Code</Text>
+            <TextInput
+              style={styles.input}
+              value={form.postalCode}
+              onChangeText={(v) => setForm({ ...form, postalCode: v })}
+              placeholder="Postal code"
+              keyboardType="number-pad"
+            />
             <Text style={styles.label}>Availability</Text>
             <View style={styles.availRow}>
               {AVAILABILITY.map((a) => (
@@ -293,6 +294,22 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   addText: { ...TYPOGRAPHY.button, color: COLORS.onBrand },
+  actionsRow: { flexDirection: 'row', gap: SPACING.sm, marginTop: SPACING.md },
+  manageBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: COLORS.surface,
+    borderRadius: 14,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  manageBtnText: { ...TYPOGRAPHY.smallBold, color: COLORS.primary },
+  manageBtnDanger: { backgroundColor: COLORS.accentLight, borderColor: COLORS.accent },
+  manageBtnDangerText: { color: COLORS.accentDark },
   card: {
     backgroundColor: COLORS.surface,
     borderRadius: 18,

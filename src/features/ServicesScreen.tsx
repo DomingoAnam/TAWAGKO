@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { COLORS, SPACING, TYPOGRAPHY, COMPONENT_STYLES, SHADOWS } from '../theme';
+import { COLORS, SPACING, TYPOGRAPHY } from '../theme';
 import { ServiceItem } from '../components/ServiceItem';
 import { SearchBar } from '../components/SearchBar';
 import { getBarangayServices } from '../services/storage';
@@ -43,7 +43,7 @@ export default function ServicesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.lightGray },
+  container: { flex: 1, backgroundColor: COLORS.background },
   header: {
     alignItems: 'center',
     marginBottom: SPACING.lg,

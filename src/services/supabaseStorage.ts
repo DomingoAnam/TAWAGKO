@@ -146,6 +146,8 @@ export type EmergencyContact = {
   availability: string;
   lastUpdated: string | null;
   photoUri: string | null;
+  address: string | null;
+  postalCode: string | null;
 };
 
 export const listEmergencyContacts = () => rpc<EmergencyContact[]>('list_emergency_contacts', {});
@@ -159,6 +161,8 @@ export const upsertEmergencyContact = (
     contactNumber: string;
     availability?: string;
     photoUri?: string | null;
+    address?: string;
+    postalCode?: string;
   }
 ) =>
   rpc<string>('upsert_emergency_contact', {
@@ -169,6 +173,8 @@ export const upsertEmergencyContact = (
     p_availability: input.availability ?? 'Available',
     p_id: input.id ?? null,
     p_photo: input.photoUri ?? null,
+    p_address: input.address ?? null,
+    p_postal_code: input.postalCode ?? null,
   });
 
 export const deleteEmergencyContact = (c: Creds, id: string) =>
@@ -184,6 +190,7 @@ export type Service = {
   availability: string;
   description: string | null;
   photoUri: string | null;
+  postalCode: string | null;
 };
 
 export const listBarangayServices = () => rpc<Service[]>('list_barangay_services', {});
@@ -199,6 +206,7 @@ export const upsertBarangayService = (
     availability?: string;
     description?: string;
     photoUri?: string | null;
+    postalCode?: string;
   }
 ) =>
   rpc<string>('upsert_barangay_service', {
@@ -211,6 +219,7 @@ export const upsertBarangayService = (
     p_description: input.description ?? null,
     p_id: input.id ?? null,
     p_photo: input.photoUri ?? null,
+    p_postal_code: input.postalCode ?? null,
   });
 
 export const deleteBarangayService = (c: Creds, id: string) =>

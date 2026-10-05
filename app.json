@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#2F3E9E",
+    "backgroundColor": "#045FE4",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "ph.tawagko.app"
@@ -14,7 +14,7 @@
     "android": {
       "package": "ph.tawagko.app",
       "adaptiveIcon": {
-        "backgroundColor": "#2F3E9E",
+        "backgroundColor": "#045FE4",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
@@ -30,9 +30,9 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 180,
           "resizeMode": "contain",
-          "backgroundColor": "#2F3E9E",
+          "backgroundColor": "#045FE4",
           "dark": {
-            "backgroundColor": "#1F2A6E"
+            "backgroundColor": "#0346B3"
           }
         }
       ],

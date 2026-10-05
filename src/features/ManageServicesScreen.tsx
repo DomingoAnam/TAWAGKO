@@ -21,6 +21,7 @@ import {
   requirePersonnelAuth,
 } from '../services/supabaseStorage';
 import { EmptyState } from '../components/ReusableComponents';
+import { DirectoryCard } from '../components/DirectoryCard';
 import { pickImageAsDataUri } from '../services/imagePicker';
 
 const AVAILABILITY = ['Available', 'Unavailable'];
@@ -33,6 +34,7 @@ const blank = () => ({
   availability: 'Available',
   description: '',
   photoUri: null as string | null,
+  postalCode: '',
 });
 
 export default function ManageServicesScreen() {
@@ -76,6 +78,7 @@ export default function ManageServicesScreen() {
       availability: item.availability ?? 'Available',
       description: item.description ?? '',
       photoUri: item.photoUri ?? null,
+      postalCode: item.postalCode ?? '',
     });
     setOpen(true);
   };
@@ -135,51 +138,27 @@ export default function ManageServicesScreen() {
       ) : null}
 
       {items.map((item) => (
-        <View key={item.id} style={styles.card}>
-          <View style={styles.cardTop}>
-            <View style={styles.icon}>
-              {item.photoUri ? (
-                <Image source={{ uri: item.photoUri }} style={styles.thumb} />
-              ) : (
-                <Ionicons name="business" size={18} color={COLORS.primary} />
-              )}
+        <DirectoryCard
+          key={item.id}
+          item={item}
+          kind="service"
+          actions={
+            <View style={styles.actionsRow}>
+              <TouchableOpacity style={styles.manageBtn} onPress={() => openEdit(item)} activeOpacity={0.9}>
+                <Ionicons name="create-outline" size={17} color={COLORS.primary} />
+                <Text style={styles.manageBtnText}>EDIT</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.manageBtn, styles.manageBtnDanger]}
+                onPress={() => remove(item)}
+                activeOpacity={0.9}
+              >
+                <Ionicons name="trash-outline" size={17} color={COLORS.accentDark} />
+                <Text style={[styles.manageBtnText, styles.manageBtnDangerText]}>DELETE</Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.info}>
-              <Text style={styles.name}>{item.serviceName}</Text>
-              {item.description ? <Text style={styles.desc}>{item.description}</Text> : null}
-            </View>
-          </View>
-
-          <View style={styles.metaList}>
-            {item.contactNumber ? (
-              <View style={styles.metaRow}>
-                <Ionicons name="call-outline" size={14} color={COLORS.primary} />
-                <Text style={styles.metaText}>{item.contactNumber}</Text>
-              </View>
-            ) : null}
-            {item.location ? (
-              <View style={styles.metaRow}>
-                <Ionicons name="location-outline" size={14} color={COLORS.primary} />
-                <Text style={styles.metaText}>{item.location}</Text>
-              </View>
-            ) : null}
-            {item.officeHours ? (
-              <View style={styles.metaRow}>
-                <Ionicons name="time-outline" size={14} color={COLORS.primary} />
-                <Text style={styles.metaText}>{item.officeHours}</Text>
-              </View>
-            ) : null}
-          </View>
-
-          <View style={styles.actions}>
-            <TouchableOpacity onPress={() => openEdit(item)} hitSlop={{ top: 8, bottom: 8 }}>
-              <Text style={styles.actionText}>EDIT</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => remove(item)} hitSlop={{ top: 8, bottom: 8 }}>
-              <Text style={[styles.actionText, styles.actionDanger]}>DELETE</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+          }
+        />
       ))}
 
       <Modal visible={open} animationType="slide" transparent>
@@ -255,6 +234,14 @@ export default function ManageServicesScreen() {
               onChangeText={(v) => setForm({ ...form, officeHours: v })}
               placeholder="Mon–Fri, 8AM–5PM"
             />
+            <Text style={styles.label}>Postal Code</Text>
+            <TextInput
+              style={styles.input}
+              value={form.postalCode}
+              onChangeText={(v) => setForm({ ...form, postalCode: v })}
+              placeholder="Postal code"
+              keyboardType="number-pad"
+            />
             <Text style={styles.label}>Description</Text>
             <TextInput
               style={[styles.input, styles.multiline]}
@@ -314,6 +301,22 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   addText: { ...TYPOGRAPHY.button, color: COLORS.onBrand },
+  actionsRow: { flexDirection: 'row', gap: SPACING.sm, marginTop: SPACING.md },
+  manageBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: COLORS.surface,
+    borderRadius: 14,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  manageBtnText: { ...TYPOGRAPHY.smallBold, color: COLORS.primary },
+  manageBtnDanger: { backgroundColor: COLORS.accentLight, borderColor: COLORS.accent },
+  manageBtnDangerText: { color: COLORS.accentDark },
   card: {
     backgroundColor: COLORS.surface,
     borderRadius: 18,
