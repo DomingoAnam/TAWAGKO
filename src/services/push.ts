@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
+import { isRunningInExpoGo } from 'expo';
 import * as Notifications from 'expo-notifications';
 import { supabase } from './supabase';
 import { getCurrentUser } from './storage';
@@ -24,6 +25,12 @@ export type PushTarget = 'personnel' | 'resident';
  * of triggering the library's hard error. Local notifications still work.
  */
 const isExpoGo = () => {
+  try {
+    // Same check expo-notifications uses internally before it throws.
+    if (isRunningInExpoGo()) return true;
+  } catch {
+    // Ignore and fall through to the manifest checks.
+  }
   const c = Constants as any;
   return c?.appOwnership === 'expo' || !!c?.expoGoConfig;
 };
