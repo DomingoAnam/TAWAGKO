@@ -47,7 +47,9 @@
           "color": "#045FE4",
           "defaultChannel": "assistance"
         }
-      ]
+      ],
+      "expo-localization",
+      "expo-status-bar"
     ],
     "extra": {
       "eas": {
