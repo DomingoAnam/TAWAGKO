@@ -9,7 +9,10 @@
     "backgroundColor": "#045FE4",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "ph.tawagko.app"
+      "bundleIdentifier": "ph.tawagko.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "ph.tawagko.app",
