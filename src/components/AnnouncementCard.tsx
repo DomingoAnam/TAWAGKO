@@ -16,7 +16,7 @@ export const AnnouncementCard = ({ item, onPress }: any) => (
     <Text style={styles.meta}>
       {item.date} · {item.time}
     </Text>
-    <Text style={styles.description} numberOfLines={3}>
+    <Text style={styles.description}>
       {item.description}
     </Text>
     {item.createdBy ? (
